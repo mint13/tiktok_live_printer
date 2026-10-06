@@ -22,8 +22,10 @@ Maria Santos(maria_s88)
 
 | File | What it is |
 |---|---|
-| `tiktok_mine_printer.py` | The script |
-| `Start TikTok Printer.command` | Double-click launcher for Mac |
+| `tiktok_printer_app.py` | The settings window. Fill in your settings and start the printer from here. |
+| `tiktok_mine_printer.py` | The script that listens to your live and prints (the window starts it for you) |
+| `Start TikTok Printer.command` | Double-click launcher for Mac. It opens the settings window. |
+| `config.json` | Created automatically. Holds your saved settings. |
 | `README.md` | This guide |
 
 When a live ends, the script also creates two files in this same folder:
@@ -52,8 +54,7 @@ When a live ends, the script also creates two files in this same folder:
    lpstat -p
    ```
    Copy the name right after the word `printer`.
-6. **Edit the settings** at the top of `tiktok_mine_printer.py` (see the next section).
-7. **Make the launcher runnable.** In Terminal, run this once, with your own folder path:
+6. **Make the launcher runnable.** In Terminal, run this once, with your own folder path:
    ```
    chmod +x "/path/to/your/folder/Start TikTok Printer.command"
    ```
@@ -61,33 +62,38 @@ When a live ends, the script also creates two files in this same folder:
 
 ## Settings
 
-All settings are in the block at the top of `tiktok_mine_printer.py`.
+You enter all settings in the settings window. Click **Save & Start** and they are saved to `config.json`, so they are filled in the next time you open the window. **Reset to defaults** puts the values below back.
 
-| Setting | What it does | Example |
+| Setting | What it does | Default |
 |---|---|---|
-| `STORE_NAME` | The first line on the label | `"Your Store Name"` |
-| `PRINTER_NAME` | The exact printer name from `lpstat -p` | `"XP_420B"` |
-| `LABEL_WIDTH_MM` | Label width in millimeters | `80` |
-| `LABEL_HEIGHT_MM` | Label height in millimeters | `50` |
-| `LABEL_GAP_MM` | Gap between labels on the roll | `3` |
-| `KEYWORD` | The word viewers type before the number | `"mine"` |
-| `DUPLICATE_WINDOW_SECONDS` | After the first claim of a number, other claims of it are ignored for this long | `2` |
-| `STARTUP_IGNORE_SECONDS` | Comments in the first seconds after connecting are ignored, because they are old | `3` |
+| TikTok username | Your live account, without the `@` | `sapphoena` |
+| Store name | The first line on the label | `Sapphoena` |
+| Printer name | The exact printer name from `lpstat -p` | `Xprinter_XP_420B` |
+| Label width (mm) | Label width in millimeters | `40` |
+| Label height (mm) | Label height in millimeters | `30` |
+| Label gap (mm) | Gap between labels on the roll | `3` |
+| Keyword | The word viewers type before the number | `mine` |
+| Duplicate window (seconds) | After the first claim of a number, other claims of it are ignored for this long | `3` |
+| Startup ignore (seconds) | After connecting, every comment is ignored for this long, so old comments never print | `600` |
 
-Your own TikTok username is not stored in the file. The script asks for it every time you start.
+**About the startup ignore:** 600 seconds is 10 minutes. For that long after the script connects, no claim prints, including real ones. If you start the script while the live is already running, lower this (for example to `5`) so new claims print right away.
+
+The window cannot change settings while the printer is running. Stop it first, edit, then start again.
 
 ## Running it
 
 1. **Go live on TikTok first.**
-2. Double-click `Start TikTok Printer.command`. Terminal opens.
-3. Type your TikTok username without the `@` and press Enter. You can also start it from Terminal with `python3 tiktok_mine_printer.py yourusername`.
-4. Wait for `Connected to @yourusername's live`. The script is now listening.
-5. **Keep the Terminal window open** for the whole live.
-6. When your live ends, the summary appears and the files are saved. To stop earlier, press **Ctrl+C**, which also shows the summary.
+2. Double-click `Start TikTok Printer.command`. A Terminal window opens, then the settings window.
+3. Check the settings and click **Save & Start**.
+4. Wait for `Connected to @yourusername's live` in the box at the bottom of the window. The script is now listening.
+5. **Keep both windows open** for the whole live.
+6. When your live ends, the summary appears in the window and the files are saved. To stop earlier, click **Stop**, which also shows the summary.
 
-If you start the script before going live, it checks again every 10 seconds and connects once you are live.
+If you start it before going live, it checks again every 10 seconds and connects once you are live.
 
-## What you see in Terminal
+You can also skip the window and run the script directly with `python3 tiktok_mine_printer.py`. It reads `config.json`, and a username typed after the command (`python3 tiktok_mine_printer.py yourusername`) overrides the saved one.
+
+## What you see in the window
 
 | Message | Meaning |
 |---|---|

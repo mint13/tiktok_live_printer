@@ -159,6 +159,12 @@ ENV/
 env.bak/
 venv.bak/
 
+config.json
+live_summary_*.csv
+live_messages_*.txt
+__pycache__/
+
+
 # Spyder project settings
 .spyderproject
 .spyproject

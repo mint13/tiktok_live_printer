@@ -15,22 +15,60 @@ import subprocess
 import sys
 import time
 import csv
+import json
 import os
 
+from env_file import parse_env
 from TikTokLive import TikTokLiveClient
 from TikTokLive.events import CommentEvent, ConnectEvent
 
-# ---------------- SETTINGS (edit these) ----------------
-TIKTOK_USERNAME = "your_username"             # your TikTok username (without @)
-STORE_NAME = "Your Store Name"                # name to print on the label   
-PRINTER_NAME = "Xprinter_XP_420B"             # exact name from Terminal command: lpstat -p
-LABEL_WIDTH_MM = 40                           # match your label roll
-LABEL_HEIGHT_MM = 30
-LABEL_GAP_MM = 3
-KEYWORD = "mine"                              # comment must be: mine <number>
-DUPLICATE_WINDOW_SECONDS = 2                  # after the first "mine 1200", ignore other "mine 1200" for this long
-STARTUP_IGNORE_SECONDS = 3                    # ignore comments that arrive right after connecting (old comments)
-# --------------------------------------------------------
+# ---------------- SETTINGS ----------------
+# TIKTOK_USERNAME, STORE_NAME and PRINTER_NAME come from the .env file.
+# The other settings come from config.json. Both are saved by the settings window
+# (tiktok_printer_app.py). Anything missing falls back to these defaults.
+DEFAULTS = {
+    "TIKTOK_USERNAME": "sapphoena",
+    "STORE_NAME": "Sapphoena",
+    "PRINTER_NAME": "Xprinter_XP_420B",   # exact name from Terminal command: lpstat -p
+    "LABEL_WIDTH_MM": 40,
+    "LABEL_HEIGHT_MM": 30,
+    "LABEL_GAP_MM": 3,
+    "KEYWORD": "mine",                    # comment must be: mine <number>
+    "DUPLICATE_WINDOW_SECONDS": 3,        # after the first "mine 1200", ignore other "mine 1200" for this long
+    "STARTUP_IGNORE_SECONDS": 600,        # ignore all comments for this long after connecting
+}  # (the first three are also the fallback when .env is missing)
+ENV_KEYS = ("TIKTOK_USERNAME", "STORE_NAME", "PRINTER_NAME")
+FOLDER = os.path.dirname(os.path.abspath(__file__))
+CONFIG_PATH = os.path.join(FOLDER, "config.json")
+ENV_PATH = os.path.join(FOLDER, ".env")
+
+
+def load_config() -> dict:
+    cfg = dict(DEFAULTS)
+    try:
+        with open(CONFIG_PATH, encoding="utf-8") as f:
+            cfg.update(json.load(f))
+    except (FileNotFoundError, ValueError):
+        pass
+    env = parse_env(ENV_PATH)  # .env wins over config.json for these three values
+    for key in ENV_KEYS:
+        if env.get(key):
+            cfg[key] = env[key]
+    return cfg
+
+
+_cfg = load_config()
+# A username typed on the command line still wins: python3 tiktok_mine_printer.py yourusername
+TIKTOK_USERNAME = (sys.argv[1] if len(sys.argv) > 1 else str(_cfg["TIKTOK_USERNAME"])).strip().lstrip("@")
+STORE_NAME = str(_cfg["STORE_NAME"])
+PRINTER_NAME = str(_cfg["PRINTER_NAME"])
+LABEL_WIDTH_MM = _cfg["LABEL_WIDTH_MM"]
+LABEL_HEIGHT_MM = _cfg["LABEL_HEIGHT_MM"]
+LABEL_GAP_MM = _cfg["LABEL_GAP_MM"]
+KEYWORD = str(_cfg["KEYWORD"])
+DUPLICATE_WINDOW_SECONDS = _cfg["DUPLICATE_WINDOW_SECONDS"]
+STARTUP_IGNORE_SECONDS = _cfg["STARTUP_IGNORE_SECONDS"]
+# ------------------------------------------
 
 PATTERN = re.compile(rf"^\s*{re.escape(KEYWORD)}\s+(\d+)\s*$", re.IGNORECASE)
 

@@ -4,7 +4,8 @@ Simple settings window for the TikTok Live "mine" label printer.
 Run:
     python3 tiktok_printer_app.py
 
-Fill in the settings, click Start. Settings are saved to config.json (next to this file)
+Fill in the settings, click Start. Your username, store name and printer name are saved
+to .env, the other settings to config.json (both next to this file),
 and the label printer script (tiktok_mine_printer.py) runs in the background.
 Its output shows in the box at the bottom of the window.
 """
@@ -18,14 +19,19 @@ import threading
 import tkinter as tk
 from tkinter import messagebox, ttk
 
+from env_file import parse_env, update_env
+
 FOLDER = os.path.dirname(os.path.abspath(__file__))
 CONFIG_PATH = os.path.join(FOLDER, "config.json")
+ENV_PATH = os.path.join(FOLDER, ".env")
 SCRIPT_PATH = os.path.join(FOLDER, "tiktok_mine_printer.py")
+# These three are saved in .env, everything else in config.json
+ENV_KEYS = ("TIKTOK_USERNAME", "STORE_NAME", "PRINTER_NAME")
 
 DEFAULTS = {
-    "TIKTOK_USERNAME": "your_username",
-    "STORE_NAME": "YOUR STORE NAME",
-    "PRINTER_NAME": "YOUR PRINTER NAME",
+    "TIKTOK_USERNAME": "sapphoena",
+    "STORE_NAME": "Sapphoena",
+    "PRINTER_NAME": "Xprinter_XP_420B",
     "LABEL_WIDTH_MM": 40,
     "LABEL_HEIGHT_MM": 30,
     "LABEL_GAP_MM": 3,
@@ -110,6 +116,10 @@ class App(tk.Tk):
                 values.update(json.load(f))
         except (FileNotFoundError, ValueError):
             pass
+        env = parse_env(ENV_PATH)
+        for key in ENV_KEYS:
+            if env.get(key):
+                values[key] = env[key]
         return values
 
     def reset_defaults(self):
@@ -143,8 +153,9 @@ class App(tk.Tk):
         return values
 
     def save_config(self, values):
+        update_env(ENV_PATH, {k: values[k] for k in ENV_KEYS})
         with open(CONFIG_PATH, "w", encoding="utf-8") as f:
-            json.dump(values, f, indent=2)
+            json.dump({k: v for k, v in values.items() if k not in ENV_KEYS}, f, indent=2)
 
     # ---------- running the listener ----------
     def start(self):

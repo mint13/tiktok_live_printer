@@ -25,7 +25,11 @@ Maria Santos(maria_s88)
 | `tiktok_printer_app.py` | The settings window. Fill in your settings and start the printer from here. |
 | `tiktok_mine_printer.py` | The script that listens to your live and prints (the window starts it for you) |
 | `Start TikTok Printer.command` | Double-click launcher for Mac. It opens the settings window. |
-| `config.json` | Created automatically. Holds your saved settings. |
+| `env_file.py` | Small helper that reads and writes the `.env` file. Keep it in the folder. |
+| `.env` | Holds your TikTok username, store name and printer name |
+| `.env.example` | A blank copy of `.env` to fill in on a new computer |
+| `.gitignore` | Keeps `.env` and customer files out of Git, if you ever use it |
+| `config.json` | Created automatically. Holds the other settings (label size, keyword, timings). |
 | `README.md` | This guide |
 
 When a live ends, the script also creates two files in this same folder:
@@ -62,7 +66,9 @@ When a live ends, the script also creates two files in this same folder:
 
 ## Settings
 
-You enter all settings in the settings window. Click **Save & Start** and they are saved to `config.json`, so they are filled in the next time you open the window. **Reset to defaults** puts the values below back.
+You enter all settings in the settings window. Click **Save & Start** and they are saved, so they are filled in the next time you open the window. TikTok username, store name and printer name go into the `.env` file. The rest go into `config.json`.
+
+`.env` is a plain text file, not encrypted. It keeps these values out of the code, and on Mac it is readable only by your user account. Don't share it or upload it anywhere. On a new computer, copy `.env.example` to `.env` and fill it in (Finder hides files starting with a dot: press **Command + Shift + .** to show them). You can also edit `.env` by hand. **Reset to defaults** puts the values below back.
 
 | Setting | What it does | Default |
 |---|---|---|

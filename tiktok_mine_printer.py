@@ -11,6 +11,7 @@ import asyncio
 import re
 from datetime import datetime
 
+import shutil
 import subprocess
 import sys
 import time
@@ -95,6 +96,13 @@ def build_tspl(nickname: str, username: str, number: str) -> bytes:
     return ("\r\n".join(lines) + "\r\n").encode("ascii")
 
 
+def find_lp():
+    """Location of the Mac/Linux 'lp' print command, or None if this computer doesn't have it."""
+    if os.path.exists("/usr/bin/lp"):
+        return "/usr/bin/lp"
+    return shutil.which("lp")
+
+
 def print_raw(data: bytes) -> None:
     if sys.platform == "win32":
         # Windows: send raw TSPL commands straight to the printer
@@ -111,9 +119,14 @@ def print_raw(data: bytes) -> None:
         return
 
     # Mac: send raw TSPL commands through CUPS (the Mac print system)
-    if not os.path.exists("/usr/bin/lp"):
-        raise RuntimeError("The 'lp' print command was not found. This script needs a Mac (or Windows with pywin32).")
-    result = subprocess.run(["/usr/bin/lp", "-d", PRINTER_NAME, "-o", "raw"], input=data, capture_output=True)
+    lp = find_lp()
+    if lp is None:
+        raise RuntimeError(
+            f"The 'lp' print command was not found on this computer (system: {sys.platform}). "
+            "This script prints through 'lp' on a Mac. Run it on your Mac, "
+            "or on Windows with pywin32 installed."
+        )
+    result = subprocess.run([lp, "-d", PRINTER_NAME, "-o", "raw"], input=data, capture_output=True)
     if result.returncode != 0:
         raise RuntimeError(result.stderr.decode(errors="ignore").strip() or "lp failed")
 
@@ -129,6 +142,8 @@ async def on_connect(event: ConnectEvent):
     global connected_at
     connected_at = time.monotonic()
     print(f"Connected to @{TIKTOK_USERNAME}'s live. Waiting for '{KEYWORD} <number>' comments...")
+    print(f"[info] system: {sys.platform} | print command: {find_lp() or 'NOT FOUND'} | "
+          f"printer: {PRINTER_NAME} | script: {os.path.abspath(__file__)}")
 
 
 last_claimed = {}  # number -> time of the comment that got printed
